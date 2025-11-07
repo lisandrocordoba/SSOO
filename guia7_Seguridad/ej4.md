@@ -25,30 +25,34 @@ bool login(void) {
 
 ### a)
 
-Con $fgets()$ se queire que el usuario pueda modificar user.name y user.pass.  
+Con $fgets()$ se quiere que el usuario pueda modificar user.name y user.pass.  
 Sin embargo, al limitar el size de entrada con sizeof(user) en vez de sizeof(user.name) y sizeof(user.pass) se corre el riesgo de que se escriban datos fuera de los límites de los buffers.
 
-```
----- DIRECCIONES BAJAS ----
-| user.pass[0-7]      --> fgets(user.pass, 64 bytes)
-| user.pass[8-15]
-| user.pass[16-23]
-| user.pass[24-31]
-| user.name[0-7]     --> empieza fgets(user.name, 64 bytes)
-| user.name[8-15]
-| user.name[16-23]
-| user.name[24-31]    --> Termina fgets(user.pass)
-| realpass[0-7]
-| realpass[8-15]
-| realpass[16-23]
-| realpass[24-31]     --> Termina fgets(user.name)
-| rbp_viejo
-| ret_addr
 
----- DIRECCIONES ALTAS ----
+Notar que la vulnerabilidad ocurre si el compilador acomoda de esta forma las variables en la pila. Si realpass estuviera en las direcciones mas altas no podriamos sobreescribirla.
+
+```
+DIRECCIONES BAJAS
+    user.name[0-7]      --> Empieza fgets(user.name, 64 bytes) |
+    user.name[8-15]                                            V
+    user.name[16-23]
+    user.name[24-31]
+    user.pass[0-7]      --> Empieza fgets(user.pass, 64 bytes) |
+    user.pass[8-15]                                            V
+    user.pass[16-23]
+    user.pass[24-31]    --> Termina fgets(user.name)
+    realpass[0-7]
+    realpass[8-15]
+    realpass[16-23]
+    realpass[24-31]     --> Termina fgets(user.pass)   
+    rbp_viejo
+    ret_addr
+
+DIRECCIONES ALTAS
 ```
 
 ### b)
-Un atacante podria ingresar en fgets(user.name, sizeof(user), stdin) un string de 64 bytes, donde los ultimos 32 sobreescribirian la variable realpass. Luego el atacante ingresa la misma contraseña que sobreescibió y logra autenticarse sin conocer la contraseña real.
-
-!!!!!!!!!!!!! DUDA: realpass se va a buscar a la db LUEGO de que el usuario ingrese user.name. Real pass no sobreescribiria el intento malintencionado? 
+Un atacante podria ingresar:
+pass = Stringde32bytesStringde32bytes
+Ambos strings son iguales, pero el primero se escribira en user.pass y el segundo sobreescribira realpass por buffer overflow.
+Al hacer la comparacion, strncmp verá que son iguales y el atacante se logueara con exito.
