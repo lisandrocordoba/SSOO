@@ -10,7 +10,7 @@ Hay $2^{64}$ posibles resultados de la función hash.
 La probabilidad de acertar a uno de ellos es $\frac{1}{2^{64}}$.
 
 ### c)
-Para tener un $50$% de probabilidad de acertar al valor de hash, deberiamos probar $2^{64}/2 = 2^{63}$ hashes.  
+Para tener un $50$% de probabilidad de acertar al valor de hash, deberiamos probar $\frac{2^{64}}{2} = 2^{63}$ hashes.  
 - En un segundo podemos probar: $1.000.000.000 = 10^{9}$ hashes.
 - En un minuto: $60*10^{9}$
 - En una hora: $60*60*10^{9} = 3.6*10^{12}$
